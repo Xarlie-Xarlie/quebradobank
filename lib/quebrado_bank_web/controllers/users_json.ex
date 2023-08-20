@@ -9,4 +9,5 @@ defmodule QuebradoBankWeb.UsersJSON do
   end
 
   def get(%{user: %User{} = user}), do: user
+  def update(%{user: %User{} = user}), do: %{user: user, message: "User updated successfully"}
 end

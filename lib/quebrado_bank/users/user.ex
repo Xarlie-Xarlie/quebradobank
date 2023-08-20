@@ -25,7 +25,8 @@ defmodule QuebradoBank.Users.User do
   @derive {Jason.Encoder, only: [:name, :email, :cep]}
   @derive {Inspect, only: [:name, :email, :cep]}
 
-  @required_attrs [:name, :password, :email, :cep]
+  @create_attrs [:name, :password, :email, :cep]
+  @update_attrs [:name, :email, :cep]
   @type t :: %__MODULE__{}
 
   schema "users" do
@@ -38,15 +39,30 @@ defmodule QuebradoBank.Users.User do
   end
 
   @doc "Create a new `#{__MODULE__}` changeset."
+  @spec changeset(params :: map()) :: Changeset.t()
+  def changeset(params) do
+    %__MODULE__{}
+    |> cast(params, @create_attrs)
+    |> validate_required(@create_attrs)
+    |> do_changeset_validations()
+  end
+
+  @doc "Create an update changeset for #{__MODULE__}"
   @spec changeset(user :: t(), params :: map()) :: Changeset.t()
-  def changeset(user \\ %__MODULE__{}, params) do
+  def changeset(%__MODULE__{} = user, params) do
     user
-    |> cast(params, @required_attrs)
-    |> validate_required(@required_attrs)
+    |> cast(params, @create_attrs)
+    |> validate_required(@update_attrs)
+    |> do_changeset_validations()
+  end
+
+  @spec do_changeset_validations(Changeset.t()) :: Changeset.t()
+  defp do_changeset_validations(changeset) do
+    changeset
     |> validate_format(:email, ~r/@/)
     |> validate_length(:name, min: 3)
     |> validate_length(:password, min: 8)
-    |> validate_length(:cep, cep: 8)
+    |> validate_length(:cep, min: 5)
     |> add_password_hash()
     |> unique_constraint(:email)
   end

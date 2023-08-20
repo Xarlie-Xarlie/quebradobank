@@ -7,10 +7,10 @@ defmodule QuebradoBankWeb.UsersController do
   use QuebradoBankWeb, :controller
 
   alias QuebradoBankWeb.FallbackController
-  alias QuebradoBank.Users.User
   alias QuebradoBank.Users
+  alias QuebradoBank.Users.User
 
-  action_fallback FallbackController
+  action_fallback(FallbackController)
 
   @doc """
   Create a new user.
@@ -81,6 +81,14 @@ defmodule QuebradoBankWeb.UsersController do
       conn
       |> put_status(:ok)
       |> render(:get, user: user)
+    end
+  end
+
+  def update(conn, params) do
+    with {:ok, %User{} = user} <- Users.update(params) do
+      conn
+      |> put_status(:ok)
+      |> render(:update, user: user)
     end
   end
 end
