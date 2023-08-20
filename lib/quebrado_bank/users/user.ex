@@ -48,7 +48,7 @@ defmodule QuebradoBank.Users.User do
 
   @spec add_password_hash(Changeset.t()) :: Changeset.t()
   defp add_password_hash(%Changeset{valid?: true, changes: %{password: password}} = changeset) do
-    put_change(changeset, :password_hash, Argon2.add_hash(password))
+    change(changeset, Argon2.add_hash(password))
   end
 
   defp add_password_hash(changeset), do: changeset
