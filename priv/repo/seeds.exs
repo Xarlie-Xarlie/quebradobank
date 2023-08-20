@@ -34,7 +34,7 @@ Enum.each(
       password_hash: Argon2.hash_pwd_salt("55555555")
     }
   ],
-  &QuebradoBank.Repo.insert!/1
+  &QuebradoBank.Repo.insert(&1, on_conflict: :replace_all, conflict_target: [:email])
 )
 
 IO.puts("Users inserted")
