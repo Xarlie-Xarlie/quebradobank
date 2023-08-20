@@ -21,6 +21,10 @@ defmodule QuebradoBank.Users.User do
 
   alias Ecto.Changeset
 
+  # Hide some user's fields
+  @derive {Jason.Encoder, only: [:name, :email, :cep]}
+  @derive {Inspect, only: [:name, :email, :cep]}
+
   @required_attrs [:name, :password, :email, :cep]
   @type t :: %__MODULE__{}
 

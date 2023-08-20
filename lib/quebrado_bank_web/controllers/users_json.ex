@@ -7,4 +7,6 @@ defmodule QuebradoBankWeb.UsersJSON do
   def create(%{user: %User{id: id, cep: cep, email: email, name: name}}) do
     %{message: "User created successfully", id: id, email: email, cep: cep, name: name}
   end
+
+  def get(%{user: %User{} = user}), do: user
 end

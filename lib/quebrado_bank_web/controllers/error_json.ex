@@ -17,11 +17,14 @@ defmodule QuebradoBankWeb.ErrorJSON do
 
   @doc """
   Traverse errors and return a json.
+  Shows error message.
   """
   @spec error(map()) :: map()
   def error(%{changeset: changeset}) do
     %{errors: Changeset.traverse_errors(changeset, &translate_errors/1)}
   end
+
+  def error(%{error: error}), do: %{message: error}
 
   @spec translate_errors(tuple()) :: binary()
   defp translate_errors({msg, opts}) do

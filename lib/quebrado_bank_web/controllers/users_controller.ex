@@ -18,6 +18,9 @@ defmodule QuebradoBankWeb.UsersController do
   Returns JSON response with :created or :bad_request
   Falls into FallbackController.
 
+  ## Parameters:
+    - `params`: params for a new user.
+
   ## Example:
     iex> #{__MODULE__}.create(
       conn, 
@@ -47,6 +50,37 @@ defmodule QuebradoBankWeb.UsersController do
       conn
       |> put_status(:created)
       |> render(:create, user: user)
+    end
+  end
+
+  @doc """
+  Get an user by id.
+
+  Returns a JSON with user's info.
+  Falls into FallbackController.
+
+  ## Parameters:
+    `id`: id of an User.
+
+  ## Examples:
+    iex> #{__MODULE__}.show(
+      conn,
+      %{"id" => 1}
+    )
+    Plug.Conn{status: 200}
+
+    iex> #{__MODULE__}.show(
+      conn,
+      %{"id" => 100}
+    )
+    Plug.Conn{status: 400}
+  """
+  @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def show(conn, %{"id" => id}) do
+    with {:ok, %User{} = user} <- Users.get(id) do
+      conn
+      |> put_status(:ok)
+      |> render(:get, user: user)
     end
   end
 end
