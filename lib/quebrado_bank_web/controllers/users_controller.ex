@@ -8,7 +8,7 @@ defmodule QuebradoBankWeb.UsersController do
 
   alias QuebradoBankWeb.FallbackController
   alias QuebradoBank.Users.User
-  alias QuebradoBank.Users.Create
+  alias QuebradoBank.Users
 
   action_fallback FallbackController
 
@@ -43,7 +43,7 @@ defmodule QuebradoBankWeb.UsersController do
   """
   @spec create(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def create(conn, params) do
-    with {:ok, %User{} = user} <- Create.call(params) do
+    with {:ok, %User{} = user} <- Users.create(params) do
       conn
       |> put_status(:created)
       |> render(:create, user: user)
