@@ -44,6 +44,7 @@ defmodule QuebradoBank.Users.User do
     |> validate_length(:password, min: 8)
     |> validate_length(:cep, cep: 8)
     |> add_password_hash()
+    |> unique_constraint(:email)
   end
 
   @spec add_password_hash(Changeset.t()) :: Changeset.t()
