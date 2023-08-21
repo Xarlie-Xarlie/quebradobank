@@ -3,6 +3,9 @@ defmodule QuebradoBankWeb.UsersController do
   Users Controller.
 
   Handle with create, update, read, delete users.
+
+  Returns a JSON with user's info.
+  Falls into FallbackController.
   """
   use QuebradoBankWeb, :controller
 
@@ -14,9 +17,6 @@ defmodule QuebradoBankWeb.UsersController do
 
   @doc """
   Create a new user.
-
-  Returns JSON response with :created or :bad_request
-  Falls into FallbackController.
 
   ## Parameters:
     - `params`: params for a new user.
@@ -54,10 +54,7 @@ defmodule QuebradoBankWeb.UsersController do
   end
 
   @doc """
-  Get an user by id.
-
-  Returns a JSON with user's info.
-  Falls into FallbackController.
+  Get an user.
 
   ## Parameters:
     `id`: id of an User.
@@ -84,11 +81,59 @@ defmodule QuebradoBankWeb.UsersController do
     end
   end
 
+  @doc """
+  Update an user.
+
+  ## Parameters:
+    `params`: params to update user, also need `id` key.
+
+  ## Examples:
+    iex> #{__MODULE__}.update(
+      conn,
+      %{"id" => 1, "name" => "new_name"}
+    )
+    Plug.Conn{status: 200}
+
+    iex> #{__MODULE__}.update(
+      conn,
+      %{"id" => 100, "cep" => "1234"}
+    )
+    Plug.Conn{status: 400}
+  """
+  @spec update(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def update(conn, params) do
     with {:ok, %User{} = user} <- Users.update(params) do
       conn
       |> put_status(:ok)
       |> render(:update, user: user)
+    end
+  end
+
+  @doc """
+  Delete an user.
+
+  ## Parameters:
+    `id`: id of an User.
+
+  ## Examples:
+    iex> #{__MODULE__}.show(
+      conn,
+      %{"id" => 1}
+    )
+    Plug.Conn{status: 200}
+
+    iex> #{__MODULE__}.show(
+      conn,
+      %{"id" => 100}
+    )
+    Plug.Conn{status: 400}
+  """
+  @spec delete(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def delete(conn, %{"id" => id}) do
+    with {:ok, %User{} = user} <- Users.delete(id) do
+      conn
+      |> put_status(:ok)
+      |> render(:delete, user: user)
     end
   end
 end
