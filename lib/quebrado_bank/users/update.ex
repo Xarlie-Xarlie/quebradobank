@@ -6,6 +6,7 @@ defmodule QuebradoBank.Users.Update do
   alias Ecto.Changeset
   alias QuebradoBank.Users.User
   alias QuebradoBank.Repo
+  alias QuebradoBank.ViaCep.Client, as: ViaCepClient
 
   @doc """
   update an User.
@@ -28,8 +29,14 @@ defmodule QuebradoBank.Users.Update do
 
     iex> #{__MODULE__}.call(%{"id" => "a", cep: "1234"})
     {:error, %Ecto.Changeset{valid?: false}}
+
+    iex> #{__MODULE__}.call(%{"id" => "a", cep: "1234"})
+    {:error, :not_found}
+
+    iex> #{__MODULE__}.call(%{"id" => "a", cep: "1234"})
+    {:error, :bad_request}
   """
-  @spec call(map()) :: {:ok, User.t()} | {:error, binary() | Changeset.t()}
+  @spec call(map()) :: {:ok, User.t()} | {:error, binary() | Changeset.t() | atom()}
   def call(%{"id" => id} = params) do
     with {id, ""} <- Integer.parse(id),
          %User{} = user <- Repo.get(User, id) do
@@ -47,9 +54,23 @@ defmodule QuebradoBank.Users.Update do
   end
 
   @spec update(User.t(), map()) :: {:ok, User.t()} | {:error, Changeset.t()}
+  defp update(%User{} = user, %{"cep" => cep} = params) do
+    case client().call(cep) do
+      {:ok, _cep} ->
+        user
+        |> User.changeset(params)
+        |> Repo.update()
+
+      error ->
+        error
+    end
+  end
+
   defp update(%User{} = user, params) do
     user
     |> User.changeset(params)
     |> Repo.update()
   end
+
+  defp client(), do: Application.get_env(:quebrado_bank, :via_cep, ViaCepClient)
 end

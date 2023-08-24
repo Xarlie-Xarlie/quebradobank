@@ -8,7 +8,6 @@ defmodule QuebradoBankWeb.Router do
   scope "/api", QuebradoBankWeb do
     pipe_through :api
 
-    get "/", WelcomeController, :index
     resources "/users", UsersController, only: [:create, :update, :delete, :show]
   end
 

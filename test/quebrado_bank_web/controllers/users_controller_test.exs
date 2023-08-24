@@ -6,12 +6,18 @@ defmodule QuebradoBankWeb.UsersControllerTest do
   use QuebradoBankWeb.ConnCase, async: true
 
   import QuebradoBank.Factory
+  import Mox
 
-  alias QuebradoBank.Users.User
   alias QuebradoBank.Repo
+  alias QuebradoBank.Users.User
+  alias QuebradoBank.ViaCep.ClientMock
+
+  setup :verify_on_exit!
 
   describe "create/2" do
     test "successfully creates an user", %{conn: conn} do
+      expect(ClientMock, :call, fn _cep -> success_cep_get() end)
+
       params = %{
         cep: "12345678",
         email: "test@mail.com",
@@ -30,7 +36,9 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       assert response["name"] === "test_name"
     end
 
-    test "failed to creates an user", %{conn: conn} do
+    test "failed to creates an user with wrong params", %{conn: conn} do
+      expect(ClientMock, :call, fn _cep -> success_cep_get() end)
+
       params = %{
         cep: "1234",
         email: "test@mail.com",
@@ -49,6 +57,60 @@ defmodule QuebradoBankWeb.UsersControllerTest do
                  "password" => ["should be at least 8 character(s)"]
                }
              }
+    end
+
+    test "failed to create an user with wrong cep", %{conn: conn} do
+      expect(ClientMock, :call, fn _cep -> {:error, :not_found} end)
+
+      params = %{
+        cep: "12345678",
+        email: "test@mail.com",
+        name: "test_name",
+        password: "123456"
+      }
+
+      response =
+        conn
+        |> post(~p"/api/users", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "not_found"}
+    end
+
+    test "failed to create an user with invalid cep", %{conn: conn} do
+      expect(ClientMock, :call, fn _cep -> {:error, :bad_request} end)
+
+      params = %{
+        cep: "12345678",
+        email: "test@mail.com",
+        name: "test_name",
+        password: "123456"
+      }
+
+      response =
+        conn
+        |> post(~p"/api/users", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "bad_request"}
+    end
+
+    test "failed to create an user due to internal_server_error", %{conn: conn} do
+      expect(ClientMock, :call, fn _cep -> {:error, :internal_server_error} end)
+
+      params = %{
+        cep: "12345678",
+        email: "test@mail.com",
+        name: "test_name",
+        password: "123456"
+      }
+
+      response =
+        conn
+        |> post(~p"/api/users", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "internal_server_error"}
     end
   end
 
@@ -69,33 +131,33 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       assert response["name"] == user.name
       assert response["email"] == user.email
     end
-  end
 
-  test "fails to get a user", %{conn: conn} do
-    response =
-      conn
-      |> get(~p"/api/users/#{0}")
-      |> json_response(:not_found)
+    test "fails to get a user", %{conn: conn} do
+      response =
+        conn
+        |> get(~p"/api/users/#{0}")
+        |> json_response(:not_found)
 
-    assert response == %{"message" => "Not Found"}
-  end
+      assert response == %{"message" => "Not Found"}
+    end
 
-  test "returns id not valid when pass string as id", %{conn: conn} do
-    response =
-      conn
-      |> get(~p"/api/users/abc")
-      |> json_response(:not_found)
+    test "returns id not valid when pass string as id", %{conn: conn} do
+      response =
+        conn
+        |> get(~p"/api/users/abc")
+        |> json_response(:not_found)
 
-    assert response == %{"message" => "Not valid id"}
-  end
+      assert response == %{"message" => "Not valid id"}
+    end
 
-  test "returns id not valid when pass a wrong id", %{conn: conn} do
-    response =
-      conn
-      |> get(~p"/api/users/a1b2c3")
-      |> json_response(:not_found)
+    test "returns id not valid when pass a wrong id", %{conn: conn} do
+      response =
+        conn
+        |> get(~p"/api/users/a1b2c3")
+        |> json_response(:not_found)
 
-    assert response == %{"message" => "Not valid id"}
+      assert response == %{"message" => "Not valid id"}
+    end
   end
 
   describe "udpate/3" do
@@ -144,6 +206,7 @@ defmodule QuebradoBankWeb.UsersControllerTest do
     end
 
     test "updates user's cep", %{conn: conn, user: user} do
+      expect(ClientMock, :call, fn _cep -> success_cep_get() end)
       new_cep = "9876564321"
       params = %{cep: new_cep}
 
@@ -160,6 +223,45 @@ defmodule QuebradoBankWeb.UsersControllerTest do
                  "email" => user.email
                }
              }
+    end
+
+    test "updates to a not found cep", %{conn: conn, user: user} do
+      expect(ClientMock, :call, fn _cep -> {:error, :not_found} end)
+      new_cep = "9876564321"
+      params = %{cep: new_cep}
+
+      response =
+        conn
+        |> put(~p"/api/users/#{user.id}", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "not_found"}
+    end
+
+    test "updates to a invalid cep", %{conn: conn, user: user} do
+      expect(ClientMock, :call, fn _cep -> {:error, :bad_request} end)
+      new_cep = "9876564321"
+      params = %{cep: new_cep}
+
+      response =
+        conn
+        |> put(~p"/api/users/#{user.id}", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "bad_request"}
+    end
+
+    test "tries to update but receive server error from viacep", %{conn: conn, user: user} do
+      expect(ClientMock, :call, fn _cep -> {:error, :internal_server_error} end)
+      new_cep = "9876564321"
+      params = %{cep: new_cep}
+
+      response =
+        conn
+        |> put(~p"/api/users/#{user.id}", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "internal_server_error"}
     end
 
     test "updates user's password", %{conn: conn, user: user} do
@@ -183,6 +285,17 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       %User{password_hash: new_password_hash} = Repo.get(User, user.id)
 
       refute new_password_hash == user.password_hash
+    end
+
+    test "updates to invalid params", %{conn: conn, user: user} do
+      params = %{password: "1234"}
+
+      response =
+        conn
+        |> put(~p"/api/users/#{user.id}", params)
+        |> json_response(:bad_request)
+
+      assert response == %{"errors" => %{"password" => ["should be at least 8 character(s)"]}}
     end
   end
 
@@ -218,5 +331,9 @@ defmodule QuebradoBankWeb.UsersControllerTest do
 
       assert response == %{"message" => "Not valid id"}
     end
+  end
+
+  defp success_cep_get do
+    {:ok, %Tesla.Env{status: 200, body: ~s({"cep": "65700-000"})}}
   end
 end

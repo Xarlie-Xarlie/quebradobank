@@ -42,7 +42,9 @@ defmodule QuebradoBank.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:argon2_elixir, "~> 3.0"},
-      {:ex_machina, "~> 2.7.0"}
+      {:ex_machina, "~> 2.7.0"},
+      {:tesla, "~> 1.4"},
+      {:mox, "~> 1.0", only: :test}
     ]
   end
 

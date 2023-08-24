@@ -1,17 +1,26 @@
 defmodule QuebradoBankWeb.FallbackControllerTest do
   use QuebradoBankWeb.ConnCase, async: true
 
+  import Mox
+
+  alias QuebradoBank.ViaCep.ClientMock
+
+  setup :verify_on_exit!
+
   describe "fallback controller call/2" do
     test "take the callback from users with changeset", %{conn: conn} do
+      expect(ClientMock, :call, fn cep ->
+        {:ok, %Tesla.Env{status: 200, body: ~s({"cep": #{cep})}}
+      end)
+
       response =
         conn
-        |> post(~p"/api/users", %{})
+        |> post(~p"/api/users", %{"cep" => "00000000"})
         |> json_response(:bad_request)
 
       assert response ==
                %{
                  "errors" => %{
-                   "cep" => ["can't be blank"],
                    "email" => ["can't be blank"],
                    "name" => ["can't be blank"],
                    "password" => ["can't be blank"]

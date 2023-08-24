@@ -4,6 +4,7 @@ defmodule QuebradoBank.Users.Create do
   """
   alias QuebradoBank.Users.User
   alias QuebradoBank.Repo
+  alias QuebradoBank.ViaCep.Client, as: ViaCepClient
 
   @doc """
   Call create an user. 
@@ -47,10 +48,14 @@ defmodule QuebradoBank.Users.Create do
       }
     }
   """
-  @spec call(map()) :: {:ok, User.t()} | {:error, Changeset.t()}
-  def call(params) do
-    params
-    |> User.changeset()
-    |> Repo.insert()
+  @spec call(map()) :: {:ok, User.t()} | {:error, Changeset.t() | atom()}
+  def call(%{"cep" => cep} = params) do
+    with {:ok, _cep} <- client().call(cep) do
+      params
+      |> User.changeset()
+      |> Repo.insert()
+    end
   end
+
+  defp client(), do: Application.get_env(:quebrado_bank, :via_cep, ViaCepClient)
 end
