@@ -2,8 +2,6 @@ defmodule QuebradoBank.Users.User do
   @moduledoc """
   `#{__MODULE__}` schema.
 
-  Used to create/login users.
-
   Has a `:password` virtual field, used to create a password hash.
 
   Example:
@@ -19,6 +17,7 @@ defmodule QuebradoBank.Users.User do
 
   import Ecto.Changeset
 
+  alias QuebradoBank.Accounts.Account
   alias Ecto.Changeset
 
   # Hide some user's fields
@@ -35,6 +34,7 @@ defmodule QuebradoBank.Users.User do
     field(:password, :string, virtual: true)
     field(:email, :string)
     field(:cep, :string)
+    has_one(:account, Account)
     timestamps()
   end
 

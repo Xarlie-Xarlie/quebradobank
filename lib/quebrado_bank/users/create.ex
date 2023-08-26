@@ -2,6 +2,7 @@ defmodule QuebradoBank.Users.Create do
   @moduledoc """
   Create a new User into QuebradoBank.
   """
+
   alias QuebradoBank.Users.User
   alias QuebradoBank.Repo
   alias QuebradoBank.ViaCep.Client, as: ViaCepClient
