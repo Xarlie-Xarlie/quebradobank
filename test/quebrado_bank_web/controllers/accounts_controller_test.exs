@@ -75,5 +75,43 @@ defmodule QuebradoBankWeb.AccountsControllerTest do
         |> json_response(:bad_request)
       end
     end
+
+    test "raise an error for an empty user_id", %{conn: conn} do
+      params = %{}
+
+      assert_raise Postgrex.Error, fn ->
+        conn
+        |> post(~p"/api/accounts", params)
+        |> json_response(:bad_request)
+      end
+    end
+
+    test "can't create two accounts for the same user", %{conn: conn, user: user} do
+      params = %{user_id: user.id, balance: 12345}
+
+      response =
+        conn
+        |> post(~p"/api/accounts", params)
+        |> json_response(:created)
+
+      assert response == %{
+               "message" => "Account created successfully",
+               "id" => response["id"],
+               "user_id" => user.id,
+               "balance" => "0"
+             }
+
+      account = Repo.get(Account, response["id"])
+
+      refute is_nil(account)
+
+      assert account.balance === Decimal.new(0)
+
+      assert_raise Ecto.ConstraintError, fn ->
+        conn
+        |> post(~p"/api/accounts", params)
+        |> json_response(:bad_request)
+      end
+    end
   end
 end

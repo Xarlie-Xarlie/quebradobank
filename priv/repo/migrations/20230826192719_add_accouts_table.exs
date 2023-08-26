@@ -4,7 +4,7 @@ defmodule QuebradoBank.Repo.Migrations.AddAccoutsTable do
   def up do
     create table(:accounts) do
       add(:balance, :decimal, default: 0)
-      add(:user_id, references(:users))
+      add(:user_id, references(:users), null: false)
 
       timestamps()
     end
