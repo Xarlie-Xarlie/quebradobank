@@ -2,7 +2,7 @@ defmodule QuebradoBank.Accounts.Account do
   @moduledoc """
   ``#{__MODULE__}` schema.
 
-  Has a `:user_id` unique constraint. 
+  Has a `:user_id` unique constraint.
 
   Example:
   %#{__MODULE__}{
@@ -31,11 +31,31 @@ defmodule QuebradoBank.Accounts.Account do
     timestamps()
   end
 
+  @doc """
+  Create changeset for #{__MODULE__}.
+  """
+  @spec changeset(map()) :: Changeset.t()
+  def changeset(params) do
+    %__MODULE__{}
+    |> cast(params, [:user_id])
+    |> put_change(:balance, Decimal.new(0))
+  end
+
+  @doc """
+  Update changeset for #{__MODULE__}.
+  """
   @spec changeset(t(), map()) :: Changeset.t()
-  def changeset(account \\ %__MODULE__{}, params) do
+  def changeset(%__MODULE__{} = account, params) do
     account
     |> cast(params, [:balance, :user_id])
+    |> do_changeset_validation()
+  end
+
+  @spec do_changeset_validation(Changeset.t()) :: Changeset.t()
+  defp do_changeset_validation(changeset) do
+    changeset
     |> validate_required([:balance, :user_id])
+    |> assoc_constraint(:user)
     |> check_constraint(:balance, name: :balance_must_be_positive)
     |> unique_constraint(:user_id)
   end

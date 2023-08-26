@@ -10,7 +10,8 @@ defmodule QuebradoBank.Users.User do
       password: nil,
       password_hash: "asdf...",
       email: "charliecharlie@mail.com",
-      cep: "12345678"
+      cep: "12345678",
+      accounts: #Ecto.Association.NotLoaded<association :accounts not loaded>
     }
   """
   use Ecto.Schema

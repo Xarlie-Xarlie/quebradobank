@@ -8,7 +8,7 @@ defmodule QuebradoBank.Users.Create do
   alias QuebradoBank.ViaCep.Client, as: ViaCepClient
 
   @doc """
-  Call create an user. 
+  Call create an user.
 
   ## Parameters:
     - `params`: map with user params
@@ -23,7 +23,7 @@ defmodule QuebradoBank.Users.Create do
       }
     )
     {
-      :ok, 
+      :ok,
       %User{
         id: 1,
         name: "charlie",
@@ -42,7 +42,7 @@ defmodule QuebradoBank.Users.Create do
       }
     )
     {
-      :error, 
+      :error,
       %Ecto.Changeset{
         valid?: false,
         errors: [password: {"can't be blank", [validation: :required]}],
