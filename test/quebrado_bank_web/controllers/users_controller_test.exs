@@ -90,7 +90,7 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       response =
         conn
         |> post(~p"/api/users", params)
-        |> json_response(:not_found)
+        |> json_response(:bad_request)
 
       assert response == %{"message" => "bad_request"}
     end
@@ -108,7 +108,7 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       response =
         conn
         |> post(~p"/api/users", params)
-        |> json_response(:not_found)
+        |> json_response(:internal_server_error)
 
       assert response == %{"message" => "internal_server_error"}
     end
@@ -246,7 +246,7 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       response =
         conn
         |> put(~p"/api/users/#{user.id}", params)
-        |> json_response(:not_found)
+        |> json_response(:bad_request)
 
       assert response == %{"message" => "bad_request"}
     end
@@ -259,7 +259,7 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       response =
         conn
         |> put(~p"/api/users/#{user.id}", params)
-        |> json_response(:not_found)
+        |> json_response(:internal_server_error)
 
       assert response == %{"message" => "internal_server_error"}
     end

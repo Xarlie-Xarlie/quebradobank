@@ -35,8 +35,17 @@ defmodule QuebradoBankWeb.FallbackController do
 
   def call(conn, {:error, error}) do
     conn
-    |> put_status(:not_found)
+    |> put_status(assign_error_status(error))
     |> put_view(json: ErrorJSON)
     |> render(:error, error: error)
+  end
+
+  defp assign_error_status(error) when is_atom(error), do: error
+
+  defp assign_error_status(error) when is_binary(error) do
+    cond do
+      String.contains?(error, ["not", "Not", "found", "Found"]) -> :not_found
+      true -> :bad_request
+    end
   end
 end

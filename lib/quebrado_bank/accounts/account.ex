@@ -39,6 +39,7 @@ defmodule QuebradoBank.Accounts.Account do
     %__MODULE__{}
     |> cast(params, [:user_id])
     |> put_change(:balance, Decimal.new(0))
+    |> do_changeset_validation()
   end
 
   @doc """

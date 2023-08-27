@@ -69,21 +69,23 @@ defmodule QuebradoBankWeb.AccountsControllerTest do
     test "raise an error for an inexistent user", %{conn: conn} do
       params = %{user_id: -1, balance: 12345}
 
-      assert_raise Ecto.ConstraintError, fn ->
+      response =
         conn
         |> post(~p"/api/accounts", params)
-        |> json_response(:bad_request)
-      end
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "User not found"}
     end
 
     test "raise an error for an empty user_id", %{conn: conn} do
       params = %{}
 
-      assert_raise Postgrex.Error, fn ->
+      response =
         conn
         |> post(~p"/api/accounts", params)
         |> json_response(:bad_request)
-      end
+
+      assert response == %{"message" => "missing user_id param"}
     end
 
     test "can't create two accounts for the same user", %{conn: conn, user: user} do
@@ -107,11 +109,12 @@ defmodule QuebradoBankWeb.AccountsControllerTest do
 
       assert account.balance === Decimal.new(0)
 
-      assert_raise Ecto.ConstraintError, fn ->
+      response =
         conn
         |> post(~p"/api/accounts", params)
         |> json_response(:bad_request)
-      end
+
+      assert response == %{"errors" => %{"user_id" => ["has already been taken"]}}
     end
   end
 end
