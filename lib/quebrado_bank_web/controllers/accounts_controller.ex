@@ -9,8 +9,9 @@ defmodule QuebradoBankWeb.AccountsController do
   """
   use QuebradoBankWeb, :controller
 
+  alias Plug.Conn
   alias QuebradoBank.Accounts
-  alias Accounts.Account
+  alias QuebradoBank.Accounts.Account
   alias QuebradoBankWeb.FallbackController
 
   action_fallback FallbackController
@@ -28,11 +29,45 @@ defmodule QuebradoBankWeb.AccountsController do
     iex> #{__MODULE__}.create(conn, %{})
     %Plug.Conn{status: 400}
   """
+  @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, params) do
     with {:ok, %Account{} = account} <- Accounts.create(params) do
       conn
       |> put_status(:created)
       |> render(:create, account: account)
+    end
+  end
+
+  @doc """
+  Perform a transaction between two accounts.
+
+  ## Parameters:
+    - `params`: map with origin, destination accounts and value.
+
+  ## Examples:
+  iex> #{__MODULE__}.transaction(
+    %{
+      origin_account: 1,
+      destination_account: 2,
+      value: 100
+    }
+  )
+  %Plug.Conn{status: :ok}
+
+  iex> #{__MODULE__}.transaction(
+    %{
+      destination_account: 2,
+      value: 100
+    }
+  )
+  %Plug.Conn{status: :unprocessable_entity}
+  """
+  @spec transaction(Conn.t(), map()) :: Conn.t()
+  def transaction(conn, params) do
+    with {:ok, _transaction} <- Accounts.transaction(params) do
+      conn
+      |> put_status(:ok)
+      |> render(:transaction, message: "transaction finished successfully")
     end
   end
 end

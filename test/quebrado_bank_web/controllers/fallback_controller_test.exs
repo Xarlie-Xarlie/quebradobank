@@ -41,7 +41,7 @@ defmodule QuebradoBankWeb.FallbackControllerTest do
       response =
         conn
         |> get(~p"/api/users/abc123")
-        |> json_response(:not_found)
+        |> json_response(:bad_request)
 
       assert response == %{"message" => "Not valid id"}
     end

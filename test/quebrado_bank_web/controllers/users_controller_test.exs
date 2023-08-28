@@ -145,7 +145,7 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       response =
         conn
         |> get(~p"/api/users/abc")
-        |> json_response(:not_found)
+        |> json_response(:bad_request)
 
       assert response == %{"message" => "Not valid id"}
     end
@@ -154,7 +154,7 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       response =
         conn
         |> get(~p"/api/users/a1b2c3")
-        |> json_response(:not_found)
+        |> json_response(:bad_request)
 
       assert response == %{"message" => "Not valid id"}
     end
@@ -327,7 +327,7 @@ defmodule QuebradoBankWeb.UsersControllerTest do
       response =
         conn
         |> delete(~p"/api/users/a0")
-        |> json_response(:not_found)
+        |> json_response(:bad_request)
 
       assert response == %{"message" => "Not valid id"}
     end

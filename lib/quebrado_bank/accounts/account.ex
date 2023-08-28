@@ -60,4 +60,30 @@ defmodule QuebradoBank.Accounts.Account do
     |> check_constraint(:balance, name: :balance_must_be_positive)
     |> unique_constraint(:user_id)
   end
+
+  @doc """
+  Check if balance is valid.
+
+  Only positive values are valid.
+
+  ## Parameters:
+    - `value`: balance value.
+
+  ## Examples:
+    iex> #{__MODULE__}.balance_is_valid?(1.2)
+    true
+
+    iex> #{__MODULE__}.balance_is_valid?(-10)
+    false
+
+    iex> #{__MODULE__}.balance_is_valid?("asdf")
+    false
+  """
+  @spec balance_is_valid?(number()) :: boolean()
+  def balance_is_valid?(value) do
+    case Decimal.cast(value) do
+      {:ok, decimal_value} -> Decimal.gt?(decimal_value, Decimal.new("0"))
+      :error -> false
+    end
+  end
 end

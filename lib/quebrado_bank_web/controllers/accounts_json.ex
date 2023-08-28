@@ -9,4 +9,6 @@ defmodule QuebradoBankWeb.AccountsJSON do
   def create(%{account: %Account{id: id, balance: balance, user_id: user_id}}) do
     %{message: "Account created successfully", id: id, balance: balance, user_id: user_id}
   end
+
+  def transaction(%{message: message}), do: %{message: message}
 end

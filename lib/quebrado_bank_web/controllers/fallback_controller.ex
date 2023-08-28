@@ -33,6 +33,13 @@ defmodule QuebradoBankWeb.FallbackController do
     |> render(:error, changeset: changeset)
   end
 
+  def call(conn, {:error, _action, %Changeset{} = changeset, _}) do
+    conn
+    |> put_status(:bad_request)
+    |> put_view(json: ErrorJSON)
+    |> render(:error, changeset: changeset)
+  end
+
   def call(conn, {:error, error}) do
     conn
     |> put_status(assign_error_status(error))
@@ -44,7 +51,7 @@ defmodule QuebradoBankWeb.FallbackController do
 
   defp assign_error_status(error) when is_binary(error) do
     cond do
-      String.contains?(error, ["not", "Not", "found", "Found"]) -> :not_found
+      String.contains?(error, ["found", "Found"]) -> :not_found
       true -> :bad_request
     end
   end
