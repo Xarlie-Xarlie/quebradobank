@@ -16,26 +16,28 @@ defmodule QuebradoBank.Accounts.Transaction do
     - `value`: value of transaction.
 
   ## Example:
-    iex> #{__MODULE__}.call(1, 2, 1.15)
-    {:ok, %Account{balance: 115, user_id: 1}}
-
-    iex> #{__MODULE__}.call(balance: 115)
-    {:error, "Missing user_id param"}
-
-    iex> #{__MODULE__}.call(%{user_id: -1, balance: 115})
-    {:error, "User doesn't exist"}
-
-    iex> #{__MODULE__}.call(%{user_id: 1, balance: -115})
-    {:error,
-      %Changeset{
-        errors: [
-          balance: {
-            "is invalid",
-            [constraint: :check, constraint_name: "balance_must_be_positive"]
-          }
-        ]
+    iex> #{__MODULE__}.call(
+      %{
+        "origin_account" => 1,
+        "destination_account" => 2,
+        "value" => 1.15
+      }
+    )
+    {:ok, 
+      %{
+        withdraw: %Account{balance: 115, user_id: 1},
+        deposit: %Account{balance: 0, user_id: 2}
       }
     }
+
+    iex> #{__MODULE__}.call(
+      %{
+        "origin_account" => 1,
+        "destination_account" => 2,
+        "value" => -1.15
+      }
+    )
+    {:error, "value is not valid"}
   """
   @spec call(map()) :: {:ok, Account.t()} | {:error, map() | binary() | atom()}
   def call(%{

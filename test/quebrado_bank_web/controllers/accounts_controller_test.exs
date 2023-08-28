@@ -191,7 +191,11 @@ defmodule QuebradoBankWeb.AccountsControllerTest do
         |> post(~p"/api/accounts/transaction", params)
         |> json_response(:bad_request)
 
-      assert response == %{"errors" => %{"balance" => ["is invalid"]}}
+      assert response == %{
+               "errors" => %{
+                 "balance" => ["balance is insufficient, you can't transfer/withdraw this value"]
+               }
+             }
 
       updated_account_1 = Repo.get(Account, account_1.id)
       updated_account_2 = Repo.get(Account, account_2.id)
@@ -298,6 +302,197 @@ defmodule QuebradoBankWeb.AccountsControllerTest do
       response =
         conn
         |> post(~p"/api/accounts/transaction", %{})
+        |> json_response(:unprocessable_entity)
+
+      assert response == %{"message" => "unprocessable_entity"}
+    end
+  end
+
+  describe "withdraw/2" do
+    setup do
+      user = insert(:user)
+      account = insert(:account, user_id: user.id, balance: 10000)
+
+      {:ok, %{account: account}}
+    end
+
+    test "perform withdraw successfully", %{conn: conn, account: account} do
+      value_to_withdraw = 100
+
+      params = %{
+        account: account.id,
+        value: value_to_withdraw
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/withdraw", params)
+        |> json_response(:no_content)
+
+      assert response === %{}
+
+      account_updated = Repo.get(Account, account.id)
+
+      assert account_updated.balance === Decimal.sub(account.balance, value_to_withdraw)
+    end
+
+    test "return insufficient balance to withdraw", %{conn: conn, account: account} do
+      value_to_withdraw = 100_000
+
+      params = %{
+        account: account.id,
+        value: value_to_withdraw
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/withdraw", params)
+        |> json_response(:bad_request)
+
+      assert response == %{
+               "errors" => %{
+                 "balance" => ["balance is insufficient, you can't transfer/withdraw this value"]
+               }
+             }
+    end
+
+    test "a invalid value", %{conn: conn, account: account} do
+      value_to_withdraw = -100
+
+      params = %{
+        account: account.id,
+        value: value_to_withdraw
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/withdraw", params)
+        |> json_response(:bad_request)
+
+      assert response == %{"message" => "value is not valid"}
+    end
+
+    test "a wrong value", %{conn: conn, account: account} do
+      value_to_withdraw = "abc"
+
+      params = %{
+        account: account.id,
+        value: value_to_withdraw
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/withdraw", params)
+        |> json_response(:bad_request)
+
+      assert response == %{"message" => "value is not valid"}
+    end
+
+    test "from a not found account", %{conn: conn} do
+      value_to_withdraw = 100
+
+      params = %{
+        account: -1,
+        value: value_to_withdraw
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/withdraw", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "account not found"}
+    end
+
+    test "not pass params to withdraw", %{conn: conn} do
+      response =
+        conn
+        |> post(~p"/api/accounts/withdraw", %{})
+        |> json_response(:unprocessable_entity)
+
+      assert response == %{"message" => "unprocessable_entity"}
+    end
+  end
+
+  describe "deposit/2" do
+    setup do
+      user = insert(:user)
+      account = insert(:account, user_id: user.id, balance: 0)
+
+      {:ok, %{account: account}}
+    end
+
+    test "perform deposit successfully", %{conn: conn, account: account} do
+      value_to_deposit = 100_000
+
+      params = %{
+        account: account.id,
+        value: value_to_deposit
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/deposit", params)
+        |> json_response(:no_content)
+
+      assert response === %{}
+      account_updated = Repo.get(Account, account.id)
+
+      assert account_updated.balance === Decimal.add(account.balance, value_to_deposit)
+    end
+
+    test "a invalid value", %{conn: conn, account: account} do
+      value_to_deposit = -100
+
+      params = %{
+        account: account.id,
+        value: value_to_deposit
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/deposit", params)
+        |> json_response(:bad_request)
+
+      assert response == %{"message" => "value is not valid"}
+    end
+
+    test "a wrong value", %{conn: conn, account: account} do
+      value_to_deposit = "abc"
+
+      params = %{
+        account: account.id,
+        value: value_to_deposit
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/deposit", params)
+        |> json_response(:bad_request)
+
+      assert response == %{"message" => "value is not valid"}
+    end
+
+    test "from a not found account", %{conn: conn} do
+      value_to_deposit = 100
+
+      params = %{
+        account: -1,
+        value: value_to_deposit
+      }
+
+      response =
+        conn
+        |> post(~p"/api/accounts/deposit", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "account not found"}
+    end
+
+    test "not pass params to deposit", %{conn: conn} do
+      response =
+        conn
+        |> post(~p"/api/accounts/deposit", %{})
         |> json_response(:unprocessable_entity)
 
       assert response == %{"message" => "unprocessable_entity"}

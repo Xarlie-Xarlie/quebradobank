@@ -70,4 +70,20 @@ defmodule QuebradoBankWeb.AccountsController do
       |> render(:transaction, message: "transaction finished successfully")
     end
   end
+
+  def withdraw(conn, params) do
+    with {:ok, %Account{}} <- Accounts.withdraw(params) do
+      conn
+      |> put_status(:no_content)
+      |> render(:no_content)
+    end
+  end
+
+  def deposit(conn, params) do
+    with {:ok, %Account{}} <- Accounts.deposit(params) do
+      conn
+      |> put_status(:no_content)
+      |> render(:no_content)
+    end
+  end
 end

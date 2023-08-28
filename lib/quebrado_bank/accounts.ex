@@ -12,14 +12,14 @@ defmodule QuebradoBank.Accounts do
   @spec create(map()) :: {:ok, Account.t()} | {:error, Changeset.t() | binary()}
   defdelegate create(params), to: Create, as: :call
 
-  @spec transaction(map()) :: {:ok, map()} | {:error, map() | binary()}
+  @spec transaction(map()) :: {:ok, map()} | {:error, map() | binary() | atom()}
   defdelegate transaction(params), to: Transaction, as: :call
 
-  @spec withdraw(integer() | binary(), number()) ::
-          {:ok, Account.t()} | {:error, Changeset.t() | binary()}
-  defdelegate withdraw(account_id, value), to: Withdraw, as: :call
+  @spec withdraw(map()) ::
+          {:ok, Account.t()} | {:error, Changeset.t() | binary() | atom()}
+  defdelegate withdraw(params), to: Withdraw, as: :call
 
-  @spec deposit(integer() | binary(), number()) ::
-          {:ok, Account.t()} | {:error, Changeset.t() | binary()}
-  defdelegate deposit(account_id, value), to: Deposit, as: :call
+  @spec deposit(map()) ::
+          {:ok, Account.t()} | {:error, Changeset.t() | binary() | atom()}
+  defdelegate deposit(params), to: Deposit, as: :call
 end

@@ -11,4 +11,6 @@ defmodule QuebradoBankWeb.AccountsJSON do
   end
 
   def transaction(%{message: message}), do: %{message: message}
+
+  def no_content(_), do: %{}
 end

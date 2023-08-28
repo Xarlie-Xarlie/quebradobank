@@ -57,7 +57,10 @@ defmodule QuebradoBank.Accounts.Account do
     changeset
     |> validate_required([:balance, :user_id])
     |> assoc_constraint(:user)
-    |> check_constraint(:balance, name: :balance_must_be_positive)
+    |> check_constraint(:balance,
+      name: :balance_must_be_positive,
+      message: "balance is insufficient, you can't transfer/withdraw this value"
+    )
     |> unique_constraint(:user_id)
   end
 

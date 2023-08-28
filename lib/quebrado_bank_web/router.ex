@@ -11,6 +11,8 @@ defmodule QuebradoBankWeb.Router do
     resources "/users", UsersController, only: [:create, :update, :delete, :show]
     post "/accounts", AccountsController, :create
     post "/accounts/transaction", AccountsController, :transaction
+    post "/accounts/withdraw", AccountsController, :withdraw
+    post "/accounts/deposit", AccountsController, :deposit
   end
 
   # Enable LiveDashboard in development

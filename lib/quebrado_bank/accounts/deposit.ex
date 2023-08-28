@@ -17,28 +17,27 @@ defmodule QuebradoBank.Accounts.Deposit do
     - `value`: value to deposit.
 
   ## Examples:
-    iex> #{__MODULE__}.call(1, 10)
+    iex> #{__MODULE__}.call(%{"account" => 1, "value" => 10})
     {:ok, %Account{balance: 1100}}
 
-    iex> #{__MODULE__}.call(1, -10)
-    {:error, "Value is not valid to deposit"}
+    iex> #{__MODULE__}.call(%{"account" => 1, "value" => -10})
+    {:error, "value is not valid"}
 
-    iex> #{__MODULE__}.call(0, 10)
-    {:error, "Account not found"}
+    iex> #{__MODULE__}.call(%{"account" => -11, "value" => 10})
+    {:error, "account not found"}
   """
-  @spec call(binary() | integer(), number()) ::
-          {:ok, Account.t()} | {:error, Changeset.t() | binary()}
-  def call(_account_id, value) when value < 0, do: {:error, "Value is not valid to deposit"}
-
-  def call(account_id, value) do
+  @spec call(map()) :: {:ok, Account.t()} | {:error, Changeset.t() | binary() | atom()}
+  def call(%{"account" => account_id, "value" => value}) do
     with true <- Account.balance_is_valid?(value),
          %Account{balance: balance} = account <- Repo.get(Account, account_id) do
       Decimal.add(balance, value)
       |> then(&Account.changeset(account, %{balance: &1}))
       |> Repo.update()
     else
-      false -> {:error, "Value is not valid"}
-      nil -> {:error, "Account not found"}
+      false -> {:error, "value is not valid"}
+      nil -> {:error, "account not found"}
     end
   end
+
+  def call(_not_filled_map), do: {:error, :unprocessable_entity}
 end
