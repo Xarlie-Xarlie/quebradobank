@@ -21,4 +21,8 @@ defmodule QuebradoBankWeb.UsersJSON do
   @doc "JSON response for a deleted User."
   @spec delete(map()) :: map()
   def delete(%{user: %User{} = user}), do: %{user: user, message: "User deleted successfully"}
+
+  @doc "JSON response for a logged user"
+  @spec login(map()) :: map()
+  def login(%{token: token}), do: %{message: "Login successfully", bearer: token}
 end

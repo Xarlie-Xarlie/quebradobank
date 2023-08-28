@@ -333,6 +333,55 @@ defmodule QuebradoBankWeb.UsersControllerTest do
     end
   end
 
+  describe "login/2" do
+    setup do
+      password = "1234"
+      user = insert(:user, password: password, password_hash: Argon2.hash_pwd_salt(password))
+
+      {:ok, %{user: user, password: password}}
+    end
+
+    test "logins an user", %{conn: conn, user: user, password: password} do
+      params = %{email: user.email, password: password}
+
+      response =
+        conn
+        |> post(~p"/api/users/login", params)
+        |> json_response(:ok)
+
+      assert response == %{"message" => "Login successfully", "bearer" => response["bearer"]}
+      refute response["bearer"] === ""
+    end
+
+    test "fails login an user with wrong password", %{conn: conn, user: user} do
+      params = %{email: user.email, password: "4321"}
+
+      response =
+        conn
+        |> post(~p"/api/users/login", params)
+        |> json_response(:unauthorized)
+
+      assert response == %{"message" => "unauthorized"}
+    end
+
+    test "fails login an inexistent user", %{conn: conn} do
+      params = %{email: "mymail@mail.com", password: "4321"}
+
+      response =
+        conn
+        |> post(~p"/api/users/login", params)
+        |> json_response(:not_found)
+
+      assert response == %{"message" => "not_found"}
+    end
+
+    test "with wrong params", %{conn: conn} do
+      conn
+      |> post(~p"/api/users/login", %{})
+      |> json_response(:unauthorized)
+    end
+  end
+
   defp success_cep_get do
     {:ok, %Tesla.Env{status: 200, body: ~s({"cep": "65700-000"})}}
   end

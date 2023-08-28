@@ -12,6 +12,7 @@ defmodule QuebradoBankWeb.UsersController do
   alias QuebradoBankWeb.FallbackController
   alias QuebradoBank.Users
   alias QuebradoBank.Users.User
+  alias QuebradoBankWeb.Token
 
   action_fallback(FallbackController)
 
@@ -134,6 +135,16 @@ defmodule QuebradoBankWeb.UsersController do
       conn
       |> put_status(:ok)
       |> render(:delete, user: user)
+    end
+  end
+
+  @spec login(Plug.Conn.t(), map()) :: Plug.Conn.t() | {:error, any()}
+  def login(conn, params) do
+    with {:ok, %User{} = user} <- Users.login(params),
+         token <- Token.sign(user) do
+      conn
+      |> put_status(:ok)
+      |> render(:login, %{token: token})
     end
   end
 end
