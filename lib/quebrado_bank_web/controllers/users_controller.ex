@@ -65,13 +65,13 @@ defmodule QuebradoBankWeb.UsersController do
       conn,
       %{"id" => 1}
     )
-    Plug.Conn{status: 200}
+    %Plug.Conn{status: 200}
 
     iex> #{__MODULE__}.show(
       conn,
       %{"id" => 100}
     )
-    Plug.Conn{status: 400}
+    %Plug.Conn{status: 400}
   """
   @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def show(conn, %{"id" => id}) do
@@ -93,13 +93,13 @@ defmodule QuebradoBankWeb.UsersController do
       conn,
       %{"id" => 1, "name" => "new_name"}
     )
-    Plug.Conn{status: 200}
+    %Plug.Conn{status: 200}
 
     iex> #{__MODULE__}.update(
       conn,
       %{"id" => 100, "cep" => "1234"}
     )
-    Plug.Conn{status: 400}
+    %Plug.Conn{status: 400}
   """
   @spec update(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def update(conn, params) do
@@ -117,17 +117,17 @@ defmodule QuebradoBankWeb.UsersController do
     `id`: id of an User.
 
   ## Examples:
-    iex> #{__MODULE__}.show(
+    iex> #{__MODULE__}.delete(
       conn,
       %{"id" => 1}
     )
     Plug.Conn{status: 200}
 
-    iex> #{__MODULE__}.show(
+    iex> #{__MODULE__}.delete(
       conn,
       %{"id" => 100}
     )
-    Plug.Conn{status: 400}
+    %Plug.Conn{status: 400}
   """
   @spec delete(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def delete(conn, %{"id" => id}) do
@@ -138,6 +138,27 @@ defmodule QuebradoBankWeb.UsersController do
     end
   end
 
+  @doc """
+  Login an user.
+
+  Generates an access token. Add it as Bearer.
+
+  ## Parameters:
+    - `params`: %{"email" => "myemail@site.com", "password" => "1234"}
+
+  ## Examples:
+    iex> #{__MODULE__}.login(
+      conn,
+      %{"email" => "myemail@site.com", "password" => "1234"}
+    )
+    %Plug.Conn{status: 200}
+
+    iex> #{__MODULE__}.login(
+      conn,
+      %{"email" => "myemail@site.com", "password" => "4321"}
+    )
+    %Plug.Conn{status: 201}
+  """
   @spec login(Plug.Conn.t(), map()) :: Plug.Conn.t() | {:error, any()}
   def login(conn, params) do
     with {:ok, %User{} = user} <- Users.login(params),

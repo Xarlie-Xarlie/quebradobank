@@ -33,6 +33,15 @@ defmodule QuebradoBankWeb.ConnCase do
 
   setup tags do
     QuebradoBank.DataCase.setup_sandbox(tags)
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+
+    fake_user = QuebradoBank.Factory.insert(:user)
+
+    {:ok,
+     conn:
+       Phoenix.ConnTest.build_conn()
+       |> Plug.Conn.put_req_header(
+         "authorization",
+         "Bearer " <> QuebradoBankWeb.Token.sign(fake_user)
+       )}
   end
 end

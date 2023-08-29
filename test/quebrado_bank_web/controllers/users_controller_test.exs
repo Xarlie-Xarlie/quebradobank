@@ -382,6 +382,49 @@ defmodule QuebradoBankWeb.UsersControllerTest do
     end
   end
 
+  describe "unauthorized users" do
+    setup do
+      user = insert(:user)
+
+      {:ok, %{user: user}}
+    end
+
+    test "can create a new user" do
+      expect(ClientMock, :call, fn _cep -> success_cep_get() end)
+
+      params = %{
+        cep: "12345678",
+        email: "test@mail.com",
+        name: "test_name",
+        password: "12345678"
+      }
+
+      response =
+        Phoenix.ConnTest.build_conn()
+        |> post(~p"/api/users", params)
+        |> json_response(:created)
+
+      assert response["cep"] === "12345678"
+      assert response["email"] === "test@mail.com"
+      assert response["message"] === "User created successfully"
+      assert response["name"] === "test_name"
+    end
+
+    test "can't get user info", %{user: user} do
+      Phoenix.ConnTest.build_conn()
+      |> get(~p"/api/users/#{user.id}")
+      |> json_response(:unauthorized)
+    end
+
+    test "can't delete user", %{user: user} do
+      Phoenix.ConnTest.build_conn()
+      |> delete(~p"/api/users/#{user.id}")
+      |> json_response(:unauthorized)
+
+      refute is_nil(Repo.get(User, user.id))
+    end
+  end
+
   defp success_cep_get do
     {:ok, %Tesla.Env{status: 200, body: ~s({"cep": "65700-000"})}}
   end

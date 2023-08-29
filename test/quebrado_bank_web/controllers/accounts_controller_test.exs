@@ -498,4 +498,24 @@ defmodule QuebradoBankWeb.AccountsControllerTest do
       assert response == %{"message" => "unprocessable_entity"}
     end
   end
+
+  describe "unauthorized users" do
+    test "can't access any of accounts resources" do
+      Phoenix.ConnTest.build_conn()
+      |> post(~p"/api/accounts", %{})
+      |> json_response(:unauthorized)
+
+      Phoenix.ConnTest.build_conn()
+      |> post(~p"/api/accounts/transaction", %{})
+      |> json_response(:unauthorized)
+
+      Phoenix.ConnTest.build_conn()
+      |> post(~p"/api/accounts/withdraw", %{})
+      |> json_response(:unauthorized)
+
+      Phoenix.ConnTest.build_conn()
+      |> post(~p"/api/accounts/deposit", %{})
+      |> json_response(:unauthorized)
+    end
+  end
 end
