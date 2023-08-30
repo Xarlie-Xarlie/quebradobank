@@ -1,0 +1,83 @@
+name: Quebrado Bank
+
+env:
+  MIX_ENV: test
+
+on: 
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+    contents: read
+
+jobs:
+  continuous-integration:
+    name: Build and test
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Read .tool-versions
+        uses: marocchino/tool-versions-action@v1
+        id: versions
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ steps.versions.outputs.elixir }}
+          otp-version: ${{ steps.versions.outputs.erlang }}
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        id: deps-cache
+        with:
+          path: deps
+          key: Elixir-${{ steps.versions.outputs.elixir }}-erlang-${{ steps.versions.outputs.erlang }}-mix-${{ hashFiles('**/mix.lock') }}
+
+      - name: Restore build cache
+        uses: actions/cache@v3
+        id: deps-build-cache
+        with:
+          path: _build
+          key: Elixir-${{ steps.versions.outputs.elixir }}-erlang-${{ steps.versions.outputs.erlang }}-cross-commerce-${{ steps.previous-tag.outputs.tag }}
+          restore-keys: Elixir-${{ steps.versions.outputs.elixir }}-erlang-${{ steps.versions.outputs.erlang }}-mix-${{ hashFiles('**/mix.lock') }}
+
+      - name: Install dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      
+      - name: Compile dependencies
+        if: steps.deps-build-cache.outputs.cache-hit != 'true'
+        run: mix deps.compile --skip-umbrella-children --skip-local-deps
+
+      - name: Compile
+        run: mix compile --warnings-as-errors
+
+      - name: Ecto setup
+        run: |
+          mix ecto.create
+          mix ecto.migrate
+
+      - name: Run tests
+        run: mix test
+
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --name postgres
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
