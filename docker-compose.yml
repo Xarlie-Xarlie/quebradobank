@@ -8,8 +8,21 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - quebrado-volume:/var/lib/postgresql/data
+  web:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      MIX_ENV: prod
+    env_file:
+      - .env
+    ports:
+      - '4000:4000'
 
 volumes:
   quebrado-volume:

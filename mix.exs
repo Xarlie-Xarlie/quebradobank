@@ -9,7 +9,14 @@ defmodule QuebradoBank.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      releases: [
+        quebrado_bank: [
+          version: "0.0.1",
+          steps: [:assemble, :tar],
+          applications: [quebrado_bank: :permanent]
+        ]
+      ]
     ]
   end
 
