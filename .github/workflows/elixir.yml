@@ -3,7 +3,7 @@ name: Quebrado Bank
 env:
   MIX_ENV: test
 
-on: 
+on:
   push:
     branches: ["main"]
   pull_request:
@@ -50,7 +50,7 @@ jobs:
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
-      
+
       - name: Compile dependencies
         if: steps.deps-build-cache.outputs.cache-hit != 'true'
         run: mix deps.compile --skip-umbrella-children --skip-local-deps
@@ -81,3 +81,5 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
