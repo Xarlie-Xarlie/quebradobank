@@ -45,15 +45,16 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
-      - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Install SSH key of aws
+        uses: shimataro/ssh-key-action@v2
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 22
-          script_stop: true
-          script: |
-            docker-compose stop quebrado_bank
-            docker-compose up -d --force-recreate --build quebrado_bank
-            docker-compose exec -it quebrado_bank /bin/migrate
+          name: id_rsa-aws
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+          config: |
+            Host aws
+              HostName ${{ secrets.HOST }}
+              User ${{ secrets.USERNAME }}
+              IdentityFile ~/.ssh/id_rsa-aws
+      - name: Rebuilt app container
+        run: ssh aws "cd quebrado_bank; docker-compose stop quebrado_bank; docker-compose pull quebrado_bank; docker-compose up -d --force-recreate quebrado_bank; docker container exec -d quebrado_bank bin/migrate"
