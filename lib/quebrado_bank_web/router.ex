@@ -14,6 +14,7 @@ defmodule QuebradoBankWeb.Router do
 
     post "/users", UsersController, :create
     post "/users/login", UsersController, :login
+    get "/welcome", WelcomeController, :index
   end
 
   scope "/api", QuebradoBankWeb do
