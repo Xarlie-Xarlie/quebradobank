@@ -6,6 +6,9 @@ defmodule QuebradoBankWeb.WelcomeJSON do
   @doc "Welcome message"
   @spec welcome(any()) :: map()
   def welcome(_) do
-    %{message: "Welcome to QuebradoBank, https://github.com/Xarlie-Xarlie/quebradobank"}
+    %{
+      message: "Welcome to QuebradoBank Api, https://github.com/Xarlie-Xarlie/quebradobank\n
+       This is a simple web api written in Elixir/Phoenix"
+    }
   end
 end
