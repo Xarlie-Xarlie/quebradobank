@@ -1,18 +1,53 @@
 # QuebradoBank
 
-To start your Phoenix server:
+This is a simple API written with Elixir and Phoenix.
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+It's meant to practice some basic features of elixir and phoenix.
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+## Goals of this project:
+ - Create a web API authenticated, some resources needs an access token.
+ - Interacts with Postgres database to save infos.
+ - Enhance my coding skills, providing @docs, @specs and clean functions.
+ - Use Phoenix Release. See more in [Phoenix Release](https://hexdocs.pm/phoenix/releases.html#content)
+ - Create github actions Continuous Integration pipeline.
+ - Create github actions Continuous Deployment pipeline.
+ - Automatically start new versions of app in AWS EC2.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+## Try it:
 
-## Learn more
+### Run in Docker (Prod env):
+ - Start containers:
+```bash
+docker-compose up -d
+```
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+ - Create your prod database:
+```bash
+docker container exec -d postgres psql -U postgres -c "CREATE DATABASE quebrado_bank_prod;"
+```
+
+ - Run migrations:
+```bash
+docker container exec -d quebrado_bank bin/migrate
+```
+
+### Run locally (Dev env):
+ - Start database:
+
+```bash
+docker-compose up -d postgres
+```
+
+ - Create dev database and run migrations:
+```elixir
+mix setup
+```
+
+ - Start server:
+```elixir
+iex -S mix phx.server
+```
+
+
+
+Now you can make requests to [`localhost:4000`](http://localhost:4000).
