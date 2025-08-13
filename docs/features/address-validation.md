@@ -29,65 +29,35 @@ graph TB
 ```
 
 ### Feature Flow Diagram
-```
-User Input (CEP)
-      │
-      ▼
-┌─────────────┐
-│CEP Validation│
-│  (Format)    │
-└─────────────┘
-      │
-      ▼
-┌─────────────┐
-│ ViaCep API  │
-│   Request   │
-└─────────────┘
-      │
-      ┌─────────┐
-      │         ▼
-      │  ┌─────────────┐
-      │  │   Success   │ ──┐
-      │  └─────────────┘   │
-      │                    │
-      │  ┌─────────────┐   │    ┌─────────────┐
-      └─▶│   Failure   │ ──┼───▶│ Graceful    │
-         └─────────────┘   │    │ Handling    │
-                           │    └─────────────┘
-                           ▼
-                    ┌─────────────┐
-                    │ Continue    │
-                    │ Process     │
-                    └─────────────┘
+```mermaid
+graph TD
+    UserInput[User Input CEP]
+    UserInput --> CEPValidation[CEP Validation<br/>Format]
+    CEPValidation --> ViaCepRequest[ViaCep API<br/>Request]
+    
+    ViaCepRequest --> Success
+    ViaCepRequest --> Failure
+    
+    Success --> ContinueProcess[Continue<br/>Process]
+    Failure --> GracefulHandling[Graceful<br/>Handling]
+    GracefulHandling --> ContinueProcess
 ```
 
 ## Key Workflows
 
 ### 1. CEP Validation During Registration
 
-```
-User Registration Form
-         │
-         ▼
-┌─────────────────┐
-│ Form Validation │
-│ (Basic CEP fmt) │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ ViaCep API Call │
-│ (Address Lookup)│
-└─────────────────┘
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
-Valid CEP   Invalid CEP
-    │         │
-    ▼         ▼
-Continue   Show Warning
-Process    Continue Anyway
+```mermaid
+graph TD
+    UserRegForm[User Registration Form]
+    UserRegForm --> FormValidation[Form Validation<br/>Basic CEP fmt]
+    FormValidation --> ViaCepCall[ViaCep API Call<br/>Address Lookup]
+    
+    ViaCepCall --> ValidCEP[Valid CEP]
+    ViaCepCall --> InvalidCEP[Invalid CEP]
+    
+    ValidCEP --> ContinueProcess[Continue<br/>Process]
+    InvalidCEP --> ShowWarning[Show Warning<br/>Continue Anyway]
 ```
 
 **Input/Output:**
@@ -97,68 +67,43 @@ Process    Continue Anyway
 
 ### 2. Profile Update CEP Validation
 
-```
-Profile Update Request
-         │
-         ▼
-┌─────────────────┐
-│ Authentication  │
-│ Verification    │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ CEP Changed?    │
-│ (Compare Values)│
-└─────────────────┘
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
-  Changed   Unchanged
-    │         │
-    ▼         ▼
-Validate   Skip Check
-ViaCep     Update User
-    │         │
-    └────┬────┘
-         ▼
-   Update Profile
+```mermaid
+graph TD
+    ProfileUpdateReq[Profile Update Request]
+    ProfileUpdateReq --> AuthVerification[Authentication<br/>Verification]
+    AuthVerification --> CEPChanged[CEP Changed?<br/>Compare Values]
+    
+    CEPChanged --> Changed
+    CEPChanged --> Unchanged
+    
+    Changed --> ValidateViaCep[Validate<br/>ViaCep]
+    Unchanged --> SkipCheck[Skip Check<br/>Update User]
+    
+    ValidateViaCep --> UpdateProfile[Update Profile]
+    SkipCheck --> UpdateProfile
 ```
 
 ### 3. ViaCep API Integration Workflow
 
-```
-CEP Validation Request
-         │
-         ▼
-┌─────────────────┐
-│ Format CEP      │
-│ (Remove dashes) │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ HTTP GET Request│
-│ to ViaCep API   │
-└─────────────────┘
-         │
-    ┌────┴─────────────┐
-    │                  │
-    ▼                  ▼
-Success (200)      Error Response
-    │                  │
-    ▼                  ▼
-Parse JSON       Error Handling
-    │                  │
-    ┌─────┴─────┐      │
-    │           │      │
-    ▼           ▼      ▼
-Valid Address  Error   Network Error
-    │         Flag     │
-    └─────────┬───────┘
-              ▼
-        Return Result
+```mermaid
+graph TD
+    CEPValidationReq[CEP Validation Request]
+    CEPValidationReq --> FormatCEP[Format CEP<br/>Remove dashes]
+    FormatCEP --> HTTPRequest[HTTP GET Request<br/>to ViaCep API]
+    
+    HTTPRequest --> Success200[Success 200]
+    HTTPRequest --> ErrorResponse[Error Response]
+    
+    Success200 --> ParseJSON[Parse JSON]
+    ErrorResponse --> ErrorHandling[Error Handling]
+    
+    ParseJSON --> ValidAddress[Valid Address]
+    ParseJSON --> ErrorFlag[Error Flag]
+    ErrorHandling --> NetworkError[Network Error]
+    
+    ValidAddress --> ReturnResult[Return Result]
+    ErrorFlag --> ReturnResult
+    NetworkError --> ReturnResult
 ```
 
 ## Implementation Details
