@@ -59,32 +59,13 @@ graph TD
 
 ### 2. Account Information Retrieval
 
-```
-Account Info Request
-         │
-         ▼
-┌─────────────────┐
-│ Authentication  │
-│ (JWT Validation)│
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ User Lookup     │
-│ (From Token)    │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Account Query   │
-│ (User's Account)│
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Balance & Info  │
-│ (Current State) │
-└─────────────────┘
+```mermaid
+graph TD
+    AccountInfoRequest[Account Info Request]
+    AccountInfoRequest --> Authentication[Authentication<br/>JWT Validation]
+    Authentication --> UserLookup[User Lookup<br/>From Token]
+    UserLookup --> AccountQuery[Account Query<br/>User's Account]
+    AccountQuery --> BalanceInfo[Balance & Info<br/>Current State]
 ```
 
 **Input/Output:**
@@ -94,35 +75,14 @@ Account Info Request
 
 ### 3. Account Balance Updates
 
-```
-Balance Update Request
-         │
-         ▼
-┌─────────────────┐
-│ Account Lookup  │
-│ (By Account ID) │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Balance Calc    │
-│ (New Amount)    │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Constraint Check│
-│ (>= 0 Required) │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Database Update │
-│ (Atomic)        │
-└─────────────────┘
-         │
-         ▼
-    Updated Account
+```mermaid
+graph TD
+    BalanceUpdateRequest[Balance Update Request]
+    BalanceUpdateRequest --> AccountLookup[Account Lookup<br/>By Account ID]
+    AccountLookup --> BalanceCalc[Balance Calc<br/>New Amount]
+    BalanceCalc --> ConstraintCheck[Constraint Check<br/>>= 0 Required]
+    ConstraintCheck --> DatabaseUpdate[Database Update<br/>Atomic]
+    DatabaseUpdate --> UpdatedAccount[Updated Account]
 ```
 
 ## Implementation Details
@@ -227,14 +187,14 @@ Authorization: Bearer <jwt_token>
 
 ### Account Lifecycle States
 
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Created   │───▶│   Active    │───▶│   Closed    │
-│ (Balance=0) │    │ (In Use)    │    │ (Archived)  │
-└─────────────┘    └─────────────┘    └─────────────┘
-       │                  │                  │
-       ▼                  ▼                  ▼
-  Initial State      Normal Operations   End of Life
+```mermaid
+graph LR
+    Created[Created<br/>Balance=0] --> Active[Active<br/>In Use]
+    Active --> Closed[Closed<br/>Archived]
+    
+    Created --> InitialState[Initial State]
+    Active --> NormalOps[Normal Operations]
+    Closed --> EndOfLife[End of Life]
 ```
 
 **Current Implementation:**

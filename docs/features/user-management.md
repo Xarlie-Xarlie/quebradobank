@@ -17,20 +17,12 @@ This feature is essential for customer onboarding, security, and regulatory comp
 ## Architecture Integration
 
 ### System Context
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Client App    │───▶│ User Management │───▶│ Account Mgmt    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌─────────────────┐
-                       │ Authentication  │
-                       └─────────────────┘
-                              │
-                              ▼
-                       ┌─────────────────┐
-                       │Address Validation│
-                       └─────────────────┘
+```mermaid
+graph LR
+    ClientApp[Client App] --> UserMgmt[User Management]
+    UserMgmt --> AcctMgmt[Account Mgmt]
+    UserMgmt --> Authentication
+    UserMgmt --> AddressValidation[Address Validation]
 ```
 
 ### Dependencies
@@ -43,44 +35,15 @@ This feature is essential for customer onboarding, security, and regulatory comp
 
 ### 1. User Registration Workflow
 
-```
-User Registration Request
-         │
-         ▼
-┌─────────────────┐
-│ Input Validation│
-│ - Name (3+ chars)│
-│ - Email (unique) │
-│ - Password (8+)  │
-│ - CEP (valid)    │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Address Valid.  │
-│ (ViaCep API)    │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Password Hash   │
-│ (Argon2)        │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ User Creation   │
-│ (Database)      │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Account Creation│
-│ (Auto-trigger)  │
-└─────────────────┘
-         │
-         ▼
-   Success Response
+```mermaid
+graph TD
+    UserRegRequest[User Registration Request]
+    UserRegRequest --> InputValidation[Input Validation<br/>- Name 3+ chars<br/>- Email unique<br/>- Password 8+<br/>- CEP valid]
+    InputValidation --> AddressValidation[Address Valid.<br/>ViaCep API]
+    AddressValidation --> PasswordHash[Password Hash<br/>Argon2]
+    PasswordHash --> UserCreation[User Creation<br/>Database]
+    UserCreation --> AccountCreation[Account Creation<br/>Auto-trigger]
+    AccountCreation --> SuccessResponse[Success Response]
 ```
 
 **Input/Output:**
@@ -90,29 +53,13 @@ User Registration Request
 
 ### 2. User Authentication Workflow
 
-```
-Login Request (email/password)
-         │
-         ▼
-┌─────────────────┐
-│ User Lookup     │
-│ (by email)      │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Password Verify │
-│ (Argon2 check)  │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ JWT Generation  │
-│ (Phoenix Token) │
-└─────────────────┘
-         │
-         ▼
-   Authentication Token
+```mermaid
+graph TD
+    LoginRequest[Login Request<br/>email/password]
+    LoginRequest --> UserLookup[User Lookup<br/>by email]
+    UserLookup --> PasswordVerify[Password Verify<br/>Argon2 check]
+    PasswordVerify --> JWTGeneration[JWT Generation<br/>Phoenix Token]
+    JWTGeneration --> AuthToken[Authentication Token]
 ```
 
 **Input/Output:**
@@ -122,35 +69,14 @@ Login Request (email/password)
 
 ### 3. Profile Update Workflow
 
-```
-Profile Update Request
-         │
-         ▼
-┌─────────────────┐
-│ Authentication  │
-│ Check (JWT)     │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Input Validation│
-│ (allowed fields)│
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ CEP Validation  │
-│ (if CEP changed)│
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ User Update     │
-│ (Database)      │
-└─────────────────┘
-         │
-         ▼
-   Updated User Object
+```mermaid
+graph TD
+    ProfileUpdateRequest[Profile Update Request]
+    ProfileUpdateRequest --> AuthCheck[Authentication<br/>Check JWT]
+    AuthCheck --> InputValidation[Input Validation<br/>allowed fields]
+    InputValidation --> CEPValidation[CEP Validation<br/>if CEP changed]
+    CEPValidation --> UserUpdate[User Update<br/>Database]
+    UserUpdate --> UpdatedUserObject[Updated User Object]
 ```
 
 **Input/Output:**
@@ -258,8 +184,11 @@ Content-Type: application/json
 **Purpose**: Validates Brazilian postal codes during registration and updates
 
 **Integration Flow:**
-```
-User Input CEP → ViaCep API → Address Validation → User Creation/Update
+```mermaid
+graph LR
+    UserInputCEP[User Input CEP] --> ViaCepAPI[ViaCep API]
+    ViaCepAPI --> AddressValidation[Address Validation]
+    AddressValidation --> UserCreationUpdate[User Creation/Update]
 ```
 
 **Handling:**

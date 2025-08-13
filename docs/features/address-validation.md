@@ -18,19 +18,14 @@ This feature improves data integrity and provides a better user experience by en
 ## Architecture Integration
 
 ### Integration Context
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        QuebradoBank Application                             │
-│   ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────────┐   │
-│   │ User Management │───▶│Address Validation│───▶│  User Registration   │   │
-│   └─────────────────┘    └─────────────────┘    └─────────────────────┘   │
-└──────────────────────────────┬──────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           ViaCep API                                       │
-│                      (https://viacep.com.br)                              │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph QuebradoBank["QuebradoBank Application"]
+        UserMgmt[User Management] --> AddressValidation[Address Validation]
+        AddressValidation --> UserRegistration[User Registration]
+    end
+    
+    QuebradoBank --> ViaCepAPI[ViaCep API<br/>https://viacep.com.br]
 ```
 
 ### Feature Flow Diagram
