@@ -18,42 +18,42 @@ This feature ensures that all sensitive banking operations are properly secured 
 ## Architecture Integration
 
 ### Security Layer Diagram
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           Client Application                                │
-└──────────────────────────┬──────────────────────────────────────────────────┘
-                           │ HTTP Requests with JWT
-                           ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        Phoenix Router                                      │
-└──────────────────────────┬──────────────────────────────────────────────────┘
-                           │
-┌──────────────────────────▼──────────────────────────────────────────────────┐
-│                    Auth Pipeline                                           │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────────────────┐   │
-│  │   JWT Token     │ │  Auth Middleware│ │    User Authorization       │   │
-│  │  Verification   │ │   (Plug.Auth)   │ │      (Resource Access)      │   │
-│  └─────────────────┘ └─────────────────┘ └─────────────────────────────┘   │
-└──────────────────────────┬──────────────────────────────────────────────────┘
-                           │ Authorized Request
-                           ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      Controller Layer                                      │
-│                   (Protected Endpoints)                                    │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    Client[Client Application]
+    
+    Client -->|HTTP Requests with JWT| Router[Phoenix Router]
+    
+    Router --> AuthPipeline[Auth Pipeline]
+    
+    subgraph AuthPipeline["Auth Pipeline"]
+        JWTVerification[JWT Token Verification]
+        AuthMiddleware[Auth Middleware<br/>Plug.Auth]
+        UserAuth[User Authorization<br/>Resource Access]
+    end
+    
+    AuthPipeline -->|Authorized Request| Controller[Controller Layer<br/>Protected Endpoints]
 ```
 
 ### Request Flow
-```
-Client Request → Router → Auth Pipeline → Controller → Business Logic
-      │            │           │             │             │
-      ▼            ▼           ▼             ▼             ▼
-   JWT Token → Route Match → Token Valid? → User Access → Resource Check
-      │            │           │             │             │
-      └────────────┴───────────┴─────────────┴─────────────┘
-                              │
-                              ▼
-                        Success/Failure
+```mermaid
+graph TD
+    ClientRequest[Client Request] --> Router
+    Router --> AuthPipeline[Auth Pipeline]
+    AuthPipeline --> Controller
+    Controller --> BusinessLogic[Business Logic]
+    
+    ClientRequest --> JWTToken[JWT Token]
+    Router --> RouteMatch[Route Match]
+    AuthPipeline --> TokenValid[Token Valid?]
+    Controller --> UserAccess[User Access]
+    BusinessLogic --> ResourceCheck[Resource Check]
+    
+    JWTToken --> SuccessFailure[Success/Failure]
+    RouteMatch --> SuccessFailure
+    TokenValid --> SuccessFailure
+    UserAccess --> SuccessFailure
+    ResourceCheck --> SuccessFailure
 ```
 
 ## Key Workflows

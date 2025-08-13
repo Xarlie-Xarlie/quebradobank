@@ -17,64 +17,30 @@ This feature forms the heart of the banking system, providing the essential mone
 ## Architecture Integration
 
 ### System Context
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ Authentication  │───▶│Financial Ops    │───▶│Account Mgmt     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-   User Identity           Transaction Proc.        Balance Updates
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 ▼
-                          ┌─────────────────┐
-                          │   PostgreSQL    │
-                          │  (ACID Trans.)  │
-                          └─────────────────┘
+```mermaid
+graph LR
+    Auth[Authentication] --> FinOps[Financial Ops]
+    FinOps --> AcctMgmt[Account Mgmt]
+    
+    Auth --> UserIdentity[User Identity]
+    FinOps --> TransactionProc[Transaction Proc.]
+    AcctMgmt --> BalanceUpdates[Balance Updates]
+    
+    UserIdentity --> PostgreSQL[PostgreSQL<br/>ACID Trans.]
+    TransactionProc --> PostgreSQL
+    BalanceUpdates --> PostgreSQL
 ```
 
 ### Transaction Flow Diagram
-```
-┌─────────────────┐
-│   User Request  │
-│  (via API)      │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Authentication  │
-│ & Authorization │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Input Validation│
-│ & Business Rules│
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Account Lookup  │
-│ & Verification  │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Balance Check   │
-│ (if required)   │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Database Trans. │
-│ (Atomic Update) │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Success Response│
-│ & Updated Data  │
-└─────────────────┘
+```mermaid
+graph TD
+    UserRequest[User Request<br/>via API]
+    UserRequest --> Auth[Authentication<br/>& Authorization]
+    Auth --> Validation[Input Validation<br/>& Business Rules]
+    Validation --> AccountLookup[Account Lookup<br/>& Verification]
+    AccountLookup --> BalanceCheck[Balance Check<br/>if required]
+    BalanceCheck --> DatabaseTrans[Database Trans.<br/>Atomic Update]
+    DatabaseTrans --> SuccessResponse[Success Response<br/>& Updated Data]
 ```
 
 ## Key Workflows

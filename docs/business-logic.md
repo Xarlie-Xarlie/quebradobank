@@ -29,14 +29,26 @@ QuebradoBank is a simplified digital banking platform that provides core banking
 ## Business Workflows
 
 ### User Registration Workflow
-```
-Start → Collect User Data → Validate CEP (ViaCep) → Create User → Create Account → Complete
-  │           │                    │                │           │              │
-  │           ▼                    ▼                ▼           ▼              ▼
-  │    Name, Email, CEP,     Address Validation   User Record  Account with   Registration
-  │    Password Required     (Optional Success)    in Database  Zero Balance   Success
-  │                                │                                │
-  └─── Validation Failure ────────┴── CEP Invalid ────────────────┴─── Error Response
+```mermaid
+graph TD
+    Start --> CollectData[Collect User Data]
+    CollectData --> ValidateCEP[Validate CEP ViaCep]
+    ValidateCEP --> CreateUser[Create User]
+    CreateUser --> CreateAccount[Create Account]
+    CreateAccount --> Complete
+    
+    CollectData --> NameEmail[Name, Email, CEP,<br/>Password Required]
+    ValidateCEP --> AddrValidation[Address Validation<br/>Optional Success]
+    CreateUser --> UserRecord[User Record<br/>in Database]
+    CreateAccount --> ZeroBalance[Account with<br/>Zero Balance]
+    Complete --> RegSuccess[Registration<br/>Success]
+    
+    Start --> ValidationFailure[Validation Failure]
+    ValidateCEP --> CEPInvalid[CEP Invalid]
+    CreateAccount --> ErrorResponse[Error Response]
+    
+    ValidationFailure --> ErrorResponse
+    CEPInvalid --> ErrorResponse
 ```
 
 **Business Rules Applied:**
@@ -46,13 +58,25 @@ Start → Collect User Data → Validate CEP (ViaCep) → Create User → Create
 - Automatic account creation with $0.00 balance
 
 ### User Authentication Workflow
-```
-Login Request → Validate Credentials → Generate JWT Token → Access Granted
-     │                │                      │                  │
-     ▼                ▼                      ▼                  ▼
-Email/Password → Password Hash Check → Signed Token → Protected Resources
-     │                │                      │                  │
-     └─── Invalid ────┴─── No Match ────────┴─── Unsigned ─────┴─── Access Denied
+```mermaid
+graph TD
+    LoginRequest[Login Request] --> ValidateCredentials[Validate Credentials]
+    ValidateCredentials --> GenerateJWT[Generate JWT Token]
+    GenerateJWT --> AccessGranted[Access Granted]
+    
+    LoginRequest --> EmailPassword[Email/Password]
+    ValidateCredentials --> PasswordCheck[Password Hash Check]
+    GenerateJWT --> SignedToken[Signed Token]
+    AccessGranted --> ProtectedResources[Protected Resources]
+    
+    LoginRequest --> Invalid[Invalid]
+    ValidateCredentials --> NoMatch[No Match]
+    GenerateJWT --> Unsigned[Unsigned]
+    AccessGranted --> AccessDenied[Access Denied]
+    
+    Invalid --> AccessDenied
+    NoMatch --> AccessDenied
+    Unsigned --> AccessDenied
 ```
 
 **Business Rules Applied:**
@@ -61,11 +85,18 @@ Email/Password → Password Hash Check → Signed Token → Protected Resources
 - Session-based access control
 
 ### Account Creation Workflow
-```
-User Creation → Account Record → Set Initial Balance → Link to User → Account Ready
-     │              │                  │                │             │
-     ▼              ▼                  ▼                ▼             ▼
-New User ID → Database Insert → Balance = $0.00 → User Association → Available for Operations
+```mermaid
+graph LR
+    UserCreation[User Creation] --> AccountRecord[Account Record]
+    AccountRecord --> SetBalance[Set Initial Balance]
+    SetBalance --> LinkUser[Link to User]
+    LinkUser --> AccountReady[Account Ready]
+    
+    UserCreation --> NewUserID[New User ID]
+    AccountRecord --> DatabaseInsert[Database Insert]
+    SetBalance --> ZeroBalance[Balance = $0.00]
+    LinkUser --> UserAssociation[User Association]
+    AccountReady --> AvailableOps[Available for Operations]
 ```
 
 **Business Rules Applied:**
@@ -76,33 +107,77 @@ New User ID → Database Insert → Balance = $0.00 → User Association → Ava
 ### Financial Transaction Workflows
 
 #### Deposit Workflow
-```
-Deposit Request → Validate Amount → Update Balance → Confirm Transaction
-       │               │              │                    │
-       ▼               ▼              ▼                    ▼
-User + Amount → Positive Value → Add to Current → Success Response
-       │               │              │                    │
-       └─── Invalid ───┴── Negative ──┴── Database Error ──┴── Error Response
+```mermaid
+graph TD
+    DepositRequest[Deposit Request] --> ValidateAmount[Validate Amount]
+    ValidateAmount --> UpdateBalance[Update Balance]
+    UpdateBalance --> ConfirmTransaction[Confirm Transaction]
+    
+    DepositRequest --> UserAmount[User + Amount]
+    ValidateAmount --> PositiveValue[Positive Value]
+    UpdateBalance --> AddToCurrent[Add to Current]
+    ConfirmTransaction --> SuccessResponse[Success Response]
+    
+    DepositRequest --> Invalid[Invalid]
+    ValidateAmount --> Negative[Negative]
+    UpdateBalance --> DatabaseError[Database Error]
+    ConfirmTransaction --> ErrorResponse[Error Response]
+    
+    Invalid --> ErrorResponse
+    Negative --> ErrorResponse
+    DatabaseError --> ErrorResponse
 ```
 
 #### Withdrawal Workflow
-```
-Withdrawal Request → Validate Amount → Check Balance → Update Balance → Confirm
-        │                │               │              │              │
-        ▼                ▼               ▼              ▼              ▼
-User + Amount → Positive Value → Sufficient Funds → Subtract Amount → Success
-        │                │               │              │              │
-        └─── Invalid ────┴── Negative ───┴── Insufficient ┴── DB Error ┴── Error
+```mermaid
+graph TD
+    WithdrawalRequest[Withdrawal Request] --> ValidateAmount[Validate Amount]
+    ValidateAmount --> CheckBalance[Check Balance]
+    CheckBalance --> UpdateBalance[Update Balance]
+    UpdateBalance --> Confirm
+    
+    WithdrawalRequest --> UserAmount[User + Amount]
+    ValidateAmount --> PositiveValue[Positive Value]
+    CheckBalance --> SufficientFunds[Sufficient Funds]
+    UpdateBalance --> SubtractAmount[Subtract Amount]
+    Confirm --> Success
+    
+    WithdrawalRequest --> Invalid[Invalid]
+    ValidateAmount --> Negative[Negative]
+    CheckBalance --> Insufficient[Insufficient]
+    UpdateBalance --> DBError[DB Error]
+    Confirm --> Error
+    
+    Invalid --> Error
+    Negative --> Error
+    Insufficient --> Error
+    DBError --> Error
 ```
 
 #### Transfer Workflow
-```
-Transfer Request → Validate Accounts → Check Balance → Execute Transfer → Confirm
-       │               │                   │               │              │
-       ▼               ▼                   ▼               ▼              ▼
-From/To/Amount → Both Exist & Different → Sufficient → Atomic Update → Success
-       │               │                   │               │              │
-       └─── Invalid ───┴── Same/Missing ───┴── Insufficient ┴── Rollback ──┴── Error
+```mermaid
+graph TD
+    TransferRequest[Transfer Request] --> ValidateAccounts[Validate Accounts]
+    ValidateAccounts --> CheckBalance[Check Balance]
+    CheckBalance --> ExecuteTransfer[Execute Transfer]
+    ExecuteTransfer --> Confirm
+    
+    TransferRequest --> FromToAmount[From/To/Amount]
+    ValidateAccounts --> BothExistDifferent[Both Exist & Different]
+    CheckBalance --> Sufficient[Sufficient]
+    ExecuteTransfer --> AtomicUpdate[Atomic Update]
+    Confirm --> Success
+    
+    TransferRequest --> Invalid[Invalid]
+    ValidateAccounts --> SameMissing[Same/Missing]
+    CheckBalance --> Insufficient[Insufficient]
+    ExecuteTransfer --> Rollback
+    Confirm --> Error
+    
+    Invalid --> Error
+    SameMissing --> Error
+    Insufficient --> Error
+    Rollback --> Error
 ```
 
 **Transfer Business Logic:**
