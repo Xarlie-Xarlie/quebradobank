@@ -6,40 +6,39 @@ QuebradoBank is a cloud-native banking API built with Elixir/Phoenix, designed f
 
 ### High-Level Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Client Applications                             │
-│                         (Web, Mobile, API Consumers)                        │
-└──────────────────────────────┬──────────────────────────────────────────────┘
-                               │ HTTPS/JSON API
-                               ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            AWS EC2 Instance                                 │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                     Docker Container                                │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │                Phoenix Web Server                          │   │   │
-│  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │   │   │
-│  │  │  │   Router    │ │ Controllers │ │   Auth Middleware   │   │   │   │
-│  │  │  └─────────────┘ └─────────────┘ └─────────────────────┘   │   │   │
-│  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │   │   │
-│  │  │  │   Contexts  │ │   Schemas   │ │    Business Logic   │   │   │   │
-│  │  │  └─────────────┘ └─────────────┘ └─────────────────────┘   │   │   │
-│  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │   │   │
-│  │  │  │    Ecto     │ │  Telemetry  │ │   External Clients  │   │   │   │
-│  │  │  └─────────────┘ └─────────────┘ └─────────────────────┘   │   │   │
-│  │  └─────────────────────────────────────────────────────────────┘   │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-└──────────────────────────┬────────────────────────┬─────────────────────────┘
-                           │                        │
-                           ▼                        ▼
-┌─────────────────────────────────────┐    ┌─────────────────────────────────────┐
-│         PostgreSQL Database         │    │         External APIs              │
-│  ┌─────────────┐ ┌─────────────────┐ │    │  ┌─────────────┐ ┌─────────────────┐ │
-│  │   Users     │ │    Accounts     │ │    │  │   ViaCep    │ │   Future APIs   │ │
-│  │   Table     │ │     Table       │ │    │  │     API     │ │                 │ │
-│  └─────────────┘ └─────────────────┘ │    │  └─────────────┘ └─────────────────┘ │
-└─────────────────────────────────────┘    └─────────────────────────────────────┘
+```mermaid
+graph TB
+    Client[Client Applications<br/>Web, Mobile, API Consumers]
+    
+    subgraph AWS["AWS EC2 Instance"]
+        subgraph Docker["Docker Container"]
+            subgraph Phoenix["Phoenix Web Server"]
+                Router[Router]
+                Controllers[Controllers]
+                AuthMW[Auth Middleware]
+                Contexts[Contexts]
+                Schemas[Schemas]
+                BusinessLogic[Business Logic]
+                Ecto[Ecto]
+                Telemetry[Telemetry]
+                ExtClients[External Clients]
+            end
+        end
+    end
+    
+    subgraph DB["PostgreSQL Database"]
+        Users[Users Table]
+        Accounts[Accounts Table]
+    end
+    
+    subgraph APIs["External APIs"]
+        ViaCep[ViaCep API]
+        FutureAPIs[Future APIs]
+    end
+    
+    Client -->|HTTPS/JSON API| Phoenix
+    Phoenix --> DB
+    Phoenix --> APIs
 ```
 
 ## Infrastructure Components
@@ -72,10 +71,20 @@ QuebradoBank is a cloud-native banking API built with Elixir/Phoenix, designed f
 8. **Response** → JSON response back to client
 
 ### Data Flow Architecture
-```
-Client → Router → [Auth] → Controller → Context → Schema/Ecto → Database
-  ↓                                        ↓
-JSON Response ← JSON View ← Business Logic ← External APIs
+```mermaid
+graph LR
+    Client --> Router
+    Router --> Auth[Auth]
+    Auth --> Controller
+    Controller --> Context
+    Context --> Schema[Schema/Ecto]
+    Schema --> Database
+    
+    Context --> BusinessLogic[Business Logic]
+    BusinessLogic --> ExternalAPIs[External APIs]
+    BusinessLogic --> JSONView[JSON View]
+    JSONView --> JSONResponse[JSON Response]
+    JSONResponse --> Client
 ```
 
 ### Security Layers
@@ -88,10 +97,20 @@ JSON Response ← JSON View ← Business Logic ← External APIs
 ## Deployment Architecture
 
 ### CI/CD Pipeline
-```
-Developer Push → GitHub → CI Tests → Build Docker → Push to Hub → Deploy to AWS
-      ↓              ↓         ↓           ↓              ↓            ↓
-   Git Commit → Actions → Test Suite → Container → Registry → EC2 Update
+```mermaid
+graph LR
+    DevPush[Developer Push] --> GitHub
+    GitHub --> CITests[CI Tests]
+    CITests --> BuildDocker[Build Docker]
+    BuildDocker --> PushHub[Push to Hub]
+    PushHub --> DeployAWS[Deploy to AWS]
+    
+    DevPush --> GitCommit[Git Commit]
+    GitHub --> Actions
+    CITests --> TestSuite[Test Suite]
+    BuildDocker --> Container
+    PushHub --> Registry
+    DeployAWS --> EC2Update[EC2 Update]
 ```
 
 ### Production Environment
@@ -104,18 +123,27 @@ Developer Push → GitHub → CI Tests → Build Docker → Push to Hub → Depl
 ## Database Design
 
 ### Entity Relationship
-```
-┌─────────────────┐                    ┌─────────────────┐
-│      Users      │ 1                1 │    Accounts     │
-│─────────────────│ ────────────────── │─────────────────│
-│ id (PK)         │                    │ id (PK)         │
-│ name            │                    │ balance         │
-│ email (unique)  │                    │ user_id (FK)    │
-│ password_hash   │                    │ created_at      │
-│ cep             │                    │ updated_at      │
-│ created_at      │                    └─────────────────┘
-│ updated_at      │
-└─────────────────┘
+```mermaid
+erDiagram
+    Users {
+        int id PK
+        string name
+        string email "unique"
+        string password_hash
+        string cep
+        datetime created_at
+        datetime updated_at
+    }
+    
+    Accounts {
+        int id PK
+        decimal balance
+        int user_id FK
+        datetime created_at
+        datetime updated_at
+    }
+    
+    Users ||--|| Accounts : "1:1 relationship"
 ```
 
 ### Key Constraints
