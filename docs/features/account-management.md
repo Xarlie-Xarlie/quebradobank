@@ -17,20 +17,18 @@ This feature provides the core banking infrastructure that enables all financial
 ## Architecture Integration
 
 ### System Context
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ User Management │───▶│Account Management│───▶│Financial Ops    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-   User Creation           Account Creation        Transactions
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 ▼
-                          ┌─────────────────┐
-                          │   PostgreSQL    │
-                          │   Database      │
-                          └─────────────────┘
+```mermaid
+graph LR
+    UserMgmt[User Management] --> AcctMgmt[Account Management]
+    AcctMgmt --> FinOps[Financial Ops]
+    
+    UserMgmt --> UserCreation[User Creation]
+    AcctMgmt --> AccountCreation[Account Creation]
+    FinOps --> Transactions
+    
+    UserCreation --> PostgreSQL[PostgreSQL<br/>Database]
+    AccountCreation --> PostgreSQL
+    Transactions --> PostgreSQL
 ```
 
 ### Dependencies
@@ -43,38 +41,14 @@ This feature provides the core banking infrastructure that enables all financial
 
 ### 1. Account Creation Workflow
 
-```
-User Registration Complete
-         │
-         ▼
-┌─────────────────┐
-│ Account Request │
-│ (Auto-triggered)│
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ User Validation │
-│ (Exists & Valid)│
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Account Schema  │
-│ (Zero Balance)  │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Database Insert │
-│ (With Constraints)│
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Account Created │
-│ (Ready for Use) │
-└─────────────────┘
+```mermaid
+graph TD
+    UserRegComplete[User Registration Complete]
+    UserRegComplete --> AccountRequest[Account Request<br/>Auto-triggered]
+    AccountRequest --> UserValidation[User Validation<br/>Exists & Valid]
+    UserValidation --> AccountSchema[Account Schema<br/>Zero Balance]
+    AccountSchema --> DatabaseInsert[Database Insert<br/>With Constraints]
+    DatabaseInsert --> AccountCreated[Account Created<br/>Ready for Use]
 ```
 
 **Business Rules Applied:**

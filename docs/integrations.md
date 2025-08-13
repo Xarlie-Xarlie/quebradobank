@@ -6,21 +6,17 @@ This document describes how QuebradoBank integrates with external systems, APIs,
 
 QuebradoBank integrates with several external systems to provide complete banking functionality:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        QuebradoBank Application                             │
-└─────────────────────────┬───────────────────────────────────────────────────┘
-                          │
-    ┌─────────────────────┼─────────────────────┐
-    │                     │                     │
-    ▼                     ▼                     ▼
-┌─────────┐        ┌─────────────┐      ┌─────────────────┐
-│ ViaCep  │        │ PostgreSQL  │      │   AWS Cloud     │
-│   API   │        │  Database   │      │   Services      │
-└─────────┘        └─────────────┘      └─────────────────┘
-    │                     │                     │
-    ▼                     ▼                     ▼
-Address Validation   Data Persistence    Hosting & CI/CD
+```mermaid
+graph TB
+    App[QuebradoBank Application]
+    
+    App --> ViaCep[ViaCep API]
+    App --> PostgreSQL[PostgreSQL Database]
+    App --> AWS[AWS Cloud Services]
+    
+    ViaCep --> AddressValidation[Address Validation]
+    PostgreSQL --> DataPersistence[Data Persistence]
+    AWS --> HostingCICD[Hosting & CI/CD]
 ```
 
 ## 1. ViaCep API Integration
@@ -124,8 +120,13 @@ Production hosting, deployment, and infrastructure management.
 - **Updates**: Automated builds on main branch pushes
 
 ### Deployment Flow
-```
-Code Push → GitHub Actions → Docker Build → Docker Hub → AWS EC2 → Container Update
+```mermaid
+graph LR
+    CodePush[Code Push] --> GitHubActions[GitHub Actions]
+    GitHubActions --> DockerBuild[Docker Build]
+    DockerBuild --> DockerHub[Docker Hub]
+    DockerHub --> AWSEC2[AWS EC2]
+    AWSEC2 --> ContainerUpdate[Container Update]
 ```
 
 ### Environment Configuration

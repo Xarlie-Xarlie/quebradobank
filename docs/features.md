@@ -117,52 +117,50 @@ QuebradoBank features are organized into five main categories:
 
 ## Feature Relationship Matrix
 
-```
-┌─────────────────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
-│                     │  User   │ Account │Financial│  Auth   │ Address │
-│       Feature       │  Mgmt   │  Mgmt   │   Ops   │ & Auth  │  Valid  │
-├─────────────────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
-│ User Registration   │    ●    │    ◐    │         │         │    ◐    │
-│ User Login          │    ●    │         │         │    ◐    │         │
-│ Profile Updates     │    ●    │         │         │    ●    │    ◐    │
-│ Account Creation    │    ◐    │    ●    │         │    ●    │         │
-│ Deposits            │         │    ●    │    ●    │    ●    │         │
-│ Withdrawals         │         │    ●    │    ●    │    ●    │         │
-│ Transfers           │         │    ●    │    ●    │    ●    │         │
-│ Authentication      │    ◐    │         │         │    ●    │         │
-│ Address Validation  │    ◐    │         │         │         │    ●    │
-└─────────────────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+| Feature | User Mgmt | Account Mgmt | Financial Ops | Auth & Auth | Address Valid |
+|---------|-----------|--------------|---------------|-------------|---------------|
+| User Registration | ● | ◐ | | | ◐ |
+| User Login | ● | | | ◐ | |
+| Profile Updates | ● | | | ● | ◐ |
+| Account Creation | ◐ | ● | | ● | |
+| Deposits | | ● | ● | ● | |
+| Withdrawals | | ● | ● | ● | |
+| Transfers | | ● | ● | ● | |
+| Authentication | ◐ | | | ● | |
+| Address Validation | ◐ | | | | ● |
 
 Legend: ● Primary Feature Category  ◐ Secondary/Supporting Category
-```
 
 ## Feature Implementation Overview
 
 ### API Endpoint Summary
-```
-Public Endpoints (No Authentication Required):
-├── POST /api/users              # User Registration
-├── POST /api/users/login        # User Login
-└── GET  /api/welcome           # Welcome/Health Check
+**Public Endpoints (No Authentication Required):**
+- `POST /api/users` - User Registration
+- `POST /api/users/login` - User Login
+- `GET /api/welcome` - Welcome/Health Check
 
-Protected Endpoints (Authentication Required):
-├── GET    /api/users/:id        # Get User Profile
-├── PUT    /api/users/:id        # Update User Profile
-├── DELETE /api/users/:id        # Delete User Account
-├── POST   /api/accounts         # Create Bank Account
-├── POST   /api/accounts/deposit # Deposit Money
-├── POST   /api/accounts/withdraw# Withdraw Money
-└── POST   /api/accounts/transaction # Transfer Money
-```
+**Protected Endpoints (Authentication Required):**
+- `GET /api/users/:id` - Get User Profile
+- `PUT /api/users/:id` - Update User Profile
+- `DELETE /api/users/:id` - Delete User Account
+- `POST /api/accounts` - Create Bank Account
+- `POST /api/accounts/deposit` - Deposit Money
+- `POST /api/accounts/withdraw` - Withdraw Money
+- `POST /api/accounts/transaction` - Transfer Money
 
 ### Business Logic Integration
 
 #### User Lifecycle Flow
-```
-Registration → Authentication → Account Creation → Financial Operations
-     │              │                │                     │
-     ▼              ▼                ▼                     ▼
-CEP Validation → JWT Token → Zero Balance → Deposits/Withdrawals/Transfers
+```mermaid
+graph LR
+    Registration --> Authentication
+    Authentication --> AccountCreation[Account Creation]
+    AccountCreation --> FinancialOps[Financial Operations]
+    
+    Registration --> CEPValidation[CEP Validation]
+    Authentication --> JWTToken[JWT Token]
+    AccountCreation --> ZeroBalance[Zero Balance]
+    FinancialOps --> Operations[Deposits/Withdrawals/Transfers]
 ```
 
 #### Security Integration
